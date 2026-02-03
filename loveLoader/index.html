@@ -307,15 +307,24 @@
       // ── special: run <file> ──
       const runMatch = raw.match(/^run\s+(.+)$/i);
       if (runMatch) {
-        const fname = runMatch[1].trim();
-        // Try to pull source from the virtual FS that main.js keeps.
-        // main.js is expected to expose `window._loveFiles` as { path: content }
+        const rawFname = runMatch[1].trim();
         const files = window._loveFiles || {};
-        const source = files[fname] ?? files['/' + fname] ?? null;
+
+        // Normalise: strip leading ./ or /
+        const stripped = rawFname.replace(/^\.?\//, '');
+
+        // Try every plausible key variant
+        const source =
+          files[rawFname]       ??
+          files[stripped]       ??
+          files['/' + stripped] ??
+          files['./' + stripped] ??
+          null;
+
         if (source == null) {
-          appendLine('error', `File not found: "${fname}"\nLoaded files: ${Object.keys(files).join(', ') || '(none)'}`);
+          appendLine('error', `File not found: "${rawFname}"\nLoaded files: ${Object.keys(files).join(', ') || '(none)'}`);
         } else {
-          execCode(source, fname);
+          execCode(source, stripped);
         }
         return;
       }

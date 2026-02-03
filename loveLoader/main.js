@@ -340,8 +340,12 @@ function rebuildTree() {
   renderTree(tree, container);
 }
 
-jsObject.defineProperty(window, '_loveFiles', {
+/* ---------- Expose files to Terminal ---------- */
+// Getter so the terminal always sees the latest bytes, and flushes
+// any unsaved Monaco edits first.
+Object.defineProperty(window, '_loveFiles', {
   get() {
+    saveCurrentFile(); // flush Monaco buffer → files before reading
     const out = {};
     const decoder = new TextDecoder('utf-8');
     for (const [name, file] of Object.entries(files)) {
@@ -349,4 +353,4 @@ jsObject.defineProperty(window, '_loveFiles', {
     }
     return out;
   }
-}); 
+});
