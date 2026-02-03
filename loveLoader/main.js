@@ -1,6 +1,6 @@
-let files = {};   // filename → { bytes: Uint8Array, edited: boolean }
-let currentFile = null;
-let editor;
+window.files = {};   // filename → { bytes: Uint8Array, edited: boolean }
+window.currentFile = null;
+window.editor = null;
 
 function loadBase64(file, iframe) {
 	// 'file' should be a Blob, File, or Uint8Array wrapped in a Blob
@@ -340,15 +340,17 @@ function rebuildTree() {
   renderTree(tree, container);
 }
 
-/* ---------- Expose files to Terminal ---------- */
-// Getter so the terminal always sees the latest bytes, and flushes
-// any unsaved Monaco edits first.
+/* ---------- Expose decoded files to Terminal ---------- */
 Object.defineProperty(window, '_loveFiles', {
   get() {
-    saveCurrentFile(); // flush Monaco buffer → files before reading
+    if (window.currentFile && window.editor) {
+      // flush any unsaved Monaco edits into files first
+      const encoder = new TextEncoder();
+      window.files[window.currentFile].bytes = encoder.encode(window.editor.getValue());
+    }
     const out = {};
     const decoder = new TextDecoder('utf-8');
-    for (const [name, file] of Object.entries(files)) {
+    for (const [name, file] of Object.entries(window.files)) {
       out[name] = decoder.decode(file.bytes);
     }
     return out;
