@@ -1,6 +1,6 @@
 require('dotenv').config();
 const readline = require("readline");
-const { isUint8ClampedArray } = require('util/types');
+const { displayHomeStats } = require('./helpers/functions');
 
 const io = readline.createInterface({
     input: process.stdin,
@@ -47,10 +47,19 @@ function authenticateUser(step, userContext = "") {
     }
 }
 
-function main() {
+/* Stats:
+Rods
+Fuel
+Power Demand
+current user
+*/
+
+async function main() {
     // Hidden start
     console.warn('--- Secure Terminal ---');
-    authenticateUser("uid");
+    await authenticateUser("uid");
+    displayHomeStats(0, 100, 0, puid, true);
+    
 }
 
 main();
